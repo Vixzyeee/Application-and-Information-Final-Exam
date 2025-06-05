@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="app-url" content="{{ url('/') }}">
     <title>Dashboard</title>
     <!-- Tailwind CSS -->
     <link href="https://fonts.cdnfonts.com/css/montserrat" rel="stylesheet">
@@ -47,19 +49,7 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('schedule') }}" class="flex items-center p-2 text-[#EBEBEB] rounded-lg hover:bg-[#2B2C32] pl-6 transform hover:scale-110 transition-transform duration-300">
-                    <i class="bi bi-calendar2 text-[24px]"></i>
-                    <span class="ml-3 font-normal hidden">Schedule</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('presence') }}" class="flex items-center p-2 text-[#EBEBEB] rounded-lg hover:bg-[#2B2C32] pl-6 transform hover:scale-110 transition-transform duration-300">
-                    <i class="bi bi-clock-history text-[24px]"></i>
-                    <span class="ml-3 font-normal hidden">Presence</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('teachers') }}" class="flex items-center p-2 text-[#EBEBEB] rounded-lg hover:bg-[#2B2C32] pl-6 transform hover:scale-110 transition-transform duration-300">
+                <a href="{{ route('teachers.index') }}" class="flex items-center p-2 text-[#EBEBEB] rounded-lg hover:bg-[#2B2C32] pl-6 transform hover:scale-110 transition-transform duration-300">
                     <i class="bi bi-person text-[24px]"></i>
                     <span class="ml-3 font-normal hidden">Teachers</span>
                 </a>
@@ -68,18 +58,6 @@
                 <a href="{{ route('students') }}" class="flex items-center p-2 text-[#EBEBEB] rounded-lg hover:bg-[#2B2C32] pl-6 transform hover:scale-110 transition-transform duration-300">
                     <i class="bi bi-people text-[24px]"></i>
                     <span class="ml-3 font-normal hidden">Students</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('courses') }}" class="flex items-center p-2 text-[#EBEBEB] rounded-lg hover:bg-[#2B2C32] pl-6 transform hover:scale-110 transition-transform duration-300">
-                    <i class="bi bi-book text-[24px]"></i>
-                    <span class="ml-3 font-normal hidden">Courses</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('resources') }}" class="flex items-center p-2 text-[#EBEBEB] rounded-lg hover:bg-[#2B2C32] pl-6 transform hover:scale-110 transition-transform duration-300">
-                    <i class="bi bi-archive text-[24px]"></i>
-                    <span class="ml-3 font-normal hidden">Resources</span>
                 </a>
             </li>
         </ul>

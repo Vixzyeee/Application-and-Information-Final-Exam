@@ -65,7 +65,7 @@
         <!-- Grafik dan Attendance -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 pt-2">
             <!-- Student Activist Chart -->
-            <div class="bg-[#12131A] p-4 rounded-2xl lg:col-span-2 h-[715px] overflow-hidden">
+            <div class="bg-[#12131A] p-4 rounded-2xl lg:col-span-2 h-[680px] overflow-hidden">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-xl font-bold">Student Activist</h3>
                     <div class="flex items-center space-x-4">
@@ -79,13 +79,13 @@
                         </div>
                     </div>
                 </div>
-                <div class="h-[620px]">
+                <div class="h-[590px]">
                     <canvas id="activityChart"></canvas>
                 </div>
             </div>
             
             <!-- Student Attendance -->
-            <div class="bg-[#12131A] p-4 rounded-2xl h-[717px] overflow-hidden pt-2">
+            <div class="bg-[#12131A] p-4 rounded-2xl h-[680px] overflow-hidden pt-2">
             <h3 class="text-xl font-bold mb-4 sticky top-0 bg-[#12131A] pt-3 pb-2">Student <span class="text-gray-400 font-normal">Attendance</span></h3>
                 <div class="space-y-4 max-h-[calc(100%-50px)] pb-4 overflow-y-auto">
                     <!-- Course A -->
