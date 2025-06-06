@@ -32,12 +32,14 @@ class Teacher extends Model
         'deleted_at' => 'datetime',
     ];
     public $timestamps = true;
-    public function setTeacherPasswordAttribute($value)
-    {
-        $this->attributes['teacher_password'] = Hash::make($value);
-    }
+
     public function getAuthPassword()
     {
         return $this->teacher_password;
+    }
+
+    public function setTeacherPasswordAttribute($value)
+    {
+        $this->attributes['teacher_password'] = Hash::make($value);
     }
 }

@@ -39,10 +39,10 @@ class TeacherController extends BaseController
             if ($request->has('search')) {
                 $searchTerm = $request->search;
                 $query->where(function($q) use ($searchTerm) {
-                    $q->where('name', 'LIKE', "%{$searchTerm}%")
-                      ->orWhere('nik', 'LIKE', "%{$searchTerm}%")
-                      ->orWhere('specialization', 'LIKE', "%{$searchTerm}%")
-                      ->orWhere('email', 'LIKE', "%{$searchTerm}%");
+                    $q->where('teacher_name', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('teacher_nik', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('teacher_specialization', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('teacher_email', 'LIKE', "%{$searchTerm}%");
                 });
             }
 
@@ -227,8 +227,23 @@ class TeacherController extends BaseController
     {
         try {
             $teacher = Teacher::findOrFail($id);
+            
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'teacher' => $teacher
+                ]);
+            }
+            
             return view('teachers.edit', compact('teacher'));
         } catch (\Exception $e) {
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Teacher not found'
+                ], 404);
+            }
+            
             return redirect()->back()->with('error', 'Teacher not found.');
         }
     }
@@ -393,18 +408,22 @@ class TeacherController extends BaseController
             ]);
 
             $teacher = Teacher::findOrFail($id);
+            
+            // Get the raw password hash from database
+            $currentPasswordHash = $teacher->getRawOriginal('teacher_password');
 
             // Verify current password
-            if (!Hash::check($request->current_password, $teacher->teacher_password)) {
+            if (!Hash::check($request->current_password, $currentPasswordHash)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Current password is incorrect'
                 ], 400);
             }
 
-            // Update password
-            $teacher->teacher_password = Hash::make($request->new_password);
-            $teacher->save();
+            // Update password - the mutator will handle hashing
+            $teacher->update([
+                'teacher_password' => $request->new_password
+            ]);
 
             return response()->json([
                 'success' => true,

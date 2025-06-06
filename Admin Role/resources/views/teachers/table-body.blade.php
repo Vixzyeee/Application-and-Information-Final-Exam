@@ -1,6 +1,6 @@
 @foreach($teachers as $teacher)
 <tr>
-    <td class="align-left text-sm text-[#EFEFEF] p-1.5">
+    <td class="align-left text-sm text-[#EFEFEF] p-1">
         <div class="flex items-center">
             <img class="h-10 w-10 rounded-full ml-3 mr-1 object-cover shadow-sm transform hover:scale-125 transition-transform duration-300" 
                 src="{{ $teacher->teacher_photo ? asset('storage/'.$teacher->teacher_photo) : asset('storage/images/teachers/default-avatar.jpg') }}" 

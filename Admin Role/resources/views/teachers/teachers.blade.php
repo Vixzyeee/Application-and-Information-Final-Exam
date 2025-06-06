@@ -38,7 +38,7 @@
                     <tr>
                         <th class="w-1/7 px-3 py-3 text-center align-middle text-sm font-medium text-[#EFEFEF]">
                             <div class="flex align-left">
-                                User Name
+                                Teacher
                             </div>
                         </th>
                         <th class="w-1/7 px-3 py-3 text-center align-middle text-sm font-medium text-[#EFEFEF]">
@@ -65,7 +65,7 @@
         </div>
 
         <!-- Pagination -->
-        <div class="fixed bottom-0 right-0 left-0 mb-[30px] px-8">
+        <div class="fixed bottom-0 right-0 left-0 mb-[50px] px-8">
             <div id="paginationContainer" class="flex justify-between items-center">
                 @include('teachers.pagination')
             </div>
@@ -360,29 +360,39 @@
             }, 10);
             
             // Fetch teacher data
-            fetch(`${baseUrl}/teachers/${teacherId}/edit`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
+            fetch(`${baseUrl}/teachers/${teacherId}/edit`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.teacher) {
                     // Populate form fields
-                    document.getElementById('edit_name').value = data.teacher_name;
-                    document.getElementById('edit_nik').value = data.teacher_nik;
-                    document.getElementById('edit_specialization').value = data.teacher_specialization;
-                    document.getElementById('edit_position').value = data.teacher_position;
-                    document.getElementById('edit_email').value = data.teacher_email;
-                    document.getElementById('edit_phone').value = data.teacher_phone;
-                    if (data.teacher_photo) {
-                        document.getElementById('fileChosen').textContent = data.teacher_photo.split('/').pop();
+                    document.getElementById('edit_name').value = data.teacher.teacher_name;
+                    document.getElementById('edit_nik').value = data.teacher.teacher_nik;
+                    document.getElementById('edit_specialization').value = data.teacher.teacher_specialization;
+                    document.getElementById('edit_position').value = data.teacher.teacher_position;
+                    document.getElementById('edit_email').value = data.teacher.teacher_email;
+                    document.getElementById('edit_phone').value = data.teacher.teacher_phone;
+                    if (data.teacher.teacher_photo) {
+                        document.getElementById('fileChosen').textContent = data.teacher.teacher_photo.split('/').pop();
                     }
-                })
-                .catch(error => {
-                    console.error('Error fetching teacher data:', error);
-                    alert('Error loading teacher data. Please try again.');
-                });
+                } else {
+                    throw new Error('Teacher data not found');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching teacher data:', error);
+                // Don't show error notification, just log it
+                console.log('Error loading teacher data:', error.message);
+            });
         };
         
         // Close edit modal
@@ -845,7 +855,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let searchTimeout;
 
     function performSearch() {
-        const searchTerm = searchInput.value;
+        const searchTerm = searchInput.value.trim();
         fetchTeachers(1, searchTerm);
     }
 
@@ -855,7 +865,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     window.changePage = function(page) {
-        fetchTeachers(page, searchInput.value);
+        fetchTeachers(page, searchInput.value.trim());
     };
 
     function fetchTeachers(page = 1, search = '') {
@@ -866,6 +876,10 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             url.searchParams.delete('search');
         }
+
+        // Show loading state
+        const tableBody = document.getElementById('teachersTableBody');
+        tableBody.style.opacity = '0.5';
 
         fetch(url.toString(), {
             headers: {
@@ -892,7 +906,10 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error loading teachers. Please try again.');
+        })
+        .finally(() => {
+            // Remove loading state
+            tableBody.style.opacity = '1';
         });
     }
 });
