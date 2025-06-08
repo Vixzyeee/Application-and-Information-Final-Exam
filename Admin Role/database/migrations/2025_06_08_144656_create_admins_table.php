@@ -11,17 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('teachers', function (Blueprint $table) {
-            $table->id('teacher_id');
+        Schema::create('admins', function (Blueprint $table) {
+            $table->id('admin_id');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('teacher_name');
-            $table->string('teacher_nik')->unique();
-            $table->string('teacher_specialization');
-            $table->string('teacher_position');
-            $table->string('teacher_email')->unique();
-            $table->string('teacher_phone');
-            $table->string('teacher_photo')->nullable();
-            $table->string('teacher_password');
+            $table->string('admin_name');
+            $table->string('admin_email')->unique();
+            $table->string('admin_password');
+            $table->string('admin_photo')->nullable();
+            $table->string('admin_phone');
             $table->rememberToken();
             $table->softDeletes();
             $table->timestamps();
@@ -33,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('teachers');
+        Schema::dropIfExists('admins');
     }
 };
