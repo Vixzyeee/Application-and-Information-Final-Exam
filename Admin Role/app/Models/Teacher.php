@@ -13,6 +13,7 @@ class Teacher extends Model
     protected $table = 'teachers';
     protected $primaryKey = 'teacher_id';
     protected $fillable = [
+        'user_id',
         'teacher_name',
         'teacher_nik',
         'teacher_specialization',
@@ -41,5 +42,10 @@ class Teacher extends Model
     public function setTeacherPasswordAttribute($value)
     {
         $this->attributes['teacher_password'] = Hash::make($value);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

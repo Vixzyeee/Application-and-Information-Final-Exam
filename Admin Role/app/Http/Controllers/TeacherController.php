@@ -107,6 +107,14 @@ class TeacherController extends BaseController
                 'teacher_phone.regex' => 'Phone number must start with 08 and be between 11-13 digits',
             ]);
 
+            // Create user first
+            $user = \App\Models\User::create([
+                'name' => $validated['teacher_name'],
+                'email' => $validated['teacher_email'],
+                'password' => Hash::make($validated['teacher_password']),
+                'role' => 'teacher',
+            ]);
+
             // Upload foto (jika ada)
             if ($request->hasFile('teacher_photo')) {
                 $photo = $request->file('teacher_photo');
@@ -122,6 +130,9 @@ class TeacherController extends BaseController
                 $photoPath = $photo->storeAs('images/teachers', $photoName, 'public');
                 $validated['teacher_photo'] = $photoPath;
             }
+
+            // Add user_id to teacher data
+            $validated['user_id'] = $user->id;
 
             // Simpan data dosen
             Teacher::create($validated);
