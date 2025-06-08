@@ -55,7 +55,7 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('students') }}" class="flex items-center p-2 text-[#EBEBEB] rounded-lg hover:bg-[#2B2C32] pl-6 transform hover:scale-110 transition-transform duration-300">
+                <a href="{{ route('students.index') }}" class="flex items-center p-2 text-[#EBEBEB] rounded-lg hover:bg-[#2B2C32] pl-6 transform hover:scale-110 transition-transform duration-300">
                     <i class="bi bi-people text-[24px]"></i>
                     <span class="ml-3 font-normal hidden">Students</span>
                 </a>

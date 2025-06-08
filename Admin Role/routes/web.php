@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TeacherController;
+use App\Http\Controllers\StudentController;
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -26,13 +27,17 @@ Route::prefix('teachers')->group(function () {
     Route::post('/{teacher}/change-password', [TeacherController::class, 'changePassword'])->name('teachers.change-password');
 });
 
-Route::get('/students', function () {
-    return view('students.students');
-})->name('students');
+Route::prefix('students')->group(function () {
+    Route::get('/', [StudentController::class, 'index'])->name('students.index');
+    Route::get('/create', [StudentController::class, 'create'])->name('students.create');
+    Route::post('/', [StudentController::class, 'store'])->name('students.store');
+    Route::get('/{student}', [StudentController::class, 'show'])->name('students.show');
+    Route::get('/{student}/edit', [StudentController::class, 'edit'])->name('students.edit');
+    Route::put('/{student}', [StudentController::class, 'update'])->name('students.update');
+    Route::delete('/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
+    Route::post('/{student}/change-password', [StudentController::class, 'changePassword'])->name('students.change-password');
+});
 
 Route::get('/profile', function () {
     return view('profile.profile');
 })->name('profile');
-
-Route::resource('teachers', TeacherController::class);
-Route::post('teachers/{id}/change-password', [TeacherController::class, 'changePassword'])->name('teachers.change-password');

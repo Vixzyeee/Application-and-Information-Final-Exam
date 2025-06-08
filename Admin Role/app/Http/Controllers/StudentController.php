@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Teacher;
+use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -10,7 +10,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 
-class TeacherController extends BaseController
+class StudentController extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
 
@@ -29,38 +29,40 @@ class TeacherController extends BaseController
     public function index(Request $request)
     {
         try {
-            $query = Teacher::query();
+            $query = Student::query();
 
             // Search functionality
             if ($request->has('search')) {
                 $searchTerm = $request->search;
                 $query->where(function($q) use ($searchTerm) {
-                    $q->where('teacher_name', 'LIKE', "%{$searchTerm}%")
-                      ->orWhere('teacher_nik', 'LIKE', "%{$searchTerm}%")
-                      ->orWhere('teacher_specialization', 'LIKE', "%{$searchTerm}%")
-                      ->orWhere('teacher_email', 'LIKE', "%{$searchTerm}%");
+                    $q->where('student_name', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('student_nim', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('student_specialization', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('student_class', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('student_major', 'LIKE', "%{$searchTerm}%")
+                      ->orWhere('student_email', 'LIKE', "%{$searchTerm}%");
                 });
             }
 
-            $teachers = $query->orderBy('created_at', 'desc')->paginate(10);
+            $students = $query->orderBy('created_at', 'desc')->paginate(10);
 
             if ($request->ajax()) {
-                $html = view('teachers.table-body', compact('teachers'))->render();
-                $pagination = view('teachers.pagination', compact('teachers'))->render();
+                $html = view('students.table-body', compact('students'))->render();
+                $pagination = view('students.pagination', compact('students'))->render();
 
                 return response()->json([
                     'success' => true,
                     'html' => $html,
                     'pagination' => $pagination,
-                    'currentPage' => $teachers->currentPage(),
-                    'lastPage' => $teachers->lastPage(),
-                    'total' => $teachers->total()
+                    'currentPage' => $students->currentPage(),
+                    'lastPage' => $students->lastPage(),
+                    'total' => $students->total()
                 ]);
             }
 
-            return view('teachers.teachers', compact('teachers'));
+            return view('students.students', compact('students'));
         } catch (\Exception $e) {
-            \Log::error('Error loading teachers:', [
+            \Log::error('Error loading students:', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -68,11 +70,11 @@ class TeacherController extends BaseController
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error loading teachers: ' . $e->getMessage()
+                    'message' => 'Error loading students: ' . $e->getMessage()
                 ], 500);
             }
 
-            return redirect()->back()->with('error', 'Error loading teachers: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error loading students: ' . $e->getMessage());
         }
     }
 
@@ -81,7 +83,7 @@ class TeacherController extends BaseController
      */
     public function create()
     {
-        return view('teachers.create');
+        return view('students.create');
     }
 
     /**
@@ -94,48 +96,49 @@ class TeacherController extends BaseController
 
             // Validasi input
             $validated = $request->validate([
-                'teacher_name' => 'required|string|max:255',
-                'teacher_nik' => 'required|string|unique:teachers,teacher_nik|regex:/^TCH\d{8}$/',
-                'teacher_specialization' => 'required|string|max:255',
-                'teacher_position' => 'required|string|max:255',
-                'teacher_email' => 'required|email|unique:teachers,teacher_email',
-                'teacher_phone' => 'required|string|regex:/^08[0-9]{9,11}$/',
-                'teacher_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-                'teacher_password' => 'required|string|min:8|confirmed',
+                'student_name' => 'required|string|max:255',
+                'student_nim' => 'required|string|unique:students,student_nim|regex:/^STD\d{8}$/',
+                'student_specialization' => 'required|string|max:255',
+                'student_class' => 'required|string|max:255',
+                'student_major' => 'required|string|max:255',
+                'student_email' => 'required|email|unique:students,student_email',
+                'student_phone' => 'required|string|regex:/^08[0-9]{9,11}$/',
+                'student_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+                'student_password' => 'required|string|min:8|confirmed',
             ], [
-                'teacher_nik.regex' => 'NIK must start with TCH followed by 8 digits',
-                'teacher_phone.regex' => 'Phone number must start with 08 and be between 11-13 digits',
+                'student_nim.regex' => 'NIM must start with STD followed by 8 digits',
+                'student_phone.regex' => 'Phone number must start with 08 and be between 11-13 digits',
             ]);
 
             // Upload foto (jika ada)
-            if ($request->hasFile('teacher_photo')) {
-                $photo = $request->file('teacher_photo');
+            if ($request->hasFile('student_photo')) {
+                $photo = $request->file('student_photo');
                 $photoName = time() . '_' . $photo->getClientOriginalName();
                 
                 // Pastikan direktori exists
-                $photoDir = 'public/images/teachers';
+                $photoDir = 'public/images/students';
                 if (!Storage::exists($photoDir)) {
                     Storage::makeDirectory($photoDir);
                 }
                 
                 // Simpan foto
-                $photoPath = $photo->storeAs('images/teachers', $photoName, 'public');
-                $validated['teacher_photo'] = $photoPath;
+                $photoPath = $photo->storeAs('images/students', $photoName, 'public');
+                $validated['student_photo'] = $photoPath;
             }
 
-            // Simpan data dosen
-            Teacher::create($validated);
+            // Simpan data mahasiswa
+            Student::create($validated);
 
             DB::commit();
 
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Teacher data has been added successfully.'
+                    'message' => 'Student data has been added successfully.'
                 ]);
             }
 
-            return redirect()->route('teachers.index')->with('success', 'Teacher data has been added successfully.');
+            return redirect()->route('students.index')->with('success', 'Student data has been added successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
             if (isset($photoPath)) {
@@ -159,7 +162,7 @@ class TeacherController extends BaseController
                 Storage::disk('public')->delete($photoPath);
             }
 
-            \Log::error('Error adding teacher:', [
+            \Log::error('Error adding student:', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -167,13 +170,13 @@ class TeacherController extends BaseController
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error adding teacher: ' . $e->getMessage()
+                    'message' => 'Error adding student: ' . $e->getMessage()
                 ], 500);
             }
 
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Error adding teacher: ' . $e->getMessage());
+                ->with('error', 'Error adding student: ' . $e->getMessage());
         }
     }
 
@@ -183,24 +186,24 @@ class TeacherController extends BaseController
     public function show(string $id)
     {
         try {
-            \Log::info('Attempting to load teacher profile:', ['teacher_id' => $id]);
+            \Log::info('Attempting to load student profile:', ['student_id' => $id]);
             
-            $teacher = Teacher::findOrFail($id);
-            \Log::info('Teacher found:', ['teacher' => $teacher->toArray()]);
+            $student = Student::findOrFail($id);
+            \Log::info('Student found:', ['student' => $student->toArray()]);
             
             if (request()->ajax() || request()->wantsJson()) {
                 \Log::info('Returning JSON response');
                 return response()->json([
                     'success' => true,
-                    'data' => $teacher,
-                    'message' => 'Teacher profile loaded successfully.'
+                    'data' => $student,
+                    'message' => 'Student profile loaded successfully.'
                 ]);
             }
             
-            return view('teachers.show', compact('teacher'));
+            return view('students.show', compact('student'));
         } catch (\Exception $e) {
-            \Log::error('Error loading teacher profile:', [
-                'teacher_id' => $id,
+            \Log::error('Error loading student profile:', [
+                'student_id' => $id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -208,11 +211,11 @@ class TeacherController extends BaseController
             if (request()->ajax() || request()->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error loading teacher profile: ' . $e->getMessage()
+                    'message' => 'Error loading student profile: ' . $e->getMessage()
                 ], 404);
             }
             
-            return redirect()->back()->with('error', 'Teacher not found.');
+            return redirect()->back()->with('error', 'Student not found.');
         }
     }
 
@@ -222,25 +225,25 @@ class TeacherController extends BaseController
     public function edit(string $id)
     {
         try {
-            $teacher = Teacher::findOrFail($id);
+            $student = Student::findOrFail($id);
             
             if (request()->ajax() || request()->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'teacher' => $teacher
+                    'student' => $student
                 ]);
             }
             
-            return view('teachers.edit', compact('teacher'));
+            return view('students.edit', compact('student'));
         } catch (\Exception $e) {
             if (request()->ajax() || request()->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Teacher not found'
+                    'message' => 'Student not found'
                 ], 404);
             }
             
-            return redirect()->back()->with('error', 'Teacher not found.');
+            return redirect()->back()->with('error', 'Student not found.');
         }
     }
 
@@ -252,57 +255,58 @@ class TeacherController extends BaseController
         try {
             DB::beginTransaction();
 
-            $teacher = Teacher::findOrFail($id);
+            $student = Student::findOrFail($id);
 
             // Validasi input
             $validated = $request->validate([
-                'teacher_name' => 'required|string|max:255',
-                'teacher_nik' => 'required|string|regex:/^TCH\d{8}$/|unique:teachers,teacher_nik,' . $id . ',teacher_id',
-                'teacher_specialization' => 'required|string|max:255',
-                'teacher_position' => 'required|string|max:255',
-                'teacher_email' => 'required|email|unique:teachers,teacher_email,' . $id . ',teacher_id',
-                'teacher_phone' => 'required|string|regex:/^08[0-9]{9,11}$/',
-                'teacher_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-                'teacher_password' => 'nullable|string|min:8|confirmed',
+                'student_name' => 'required|string|max:255',
+                'student_nim' => 'required|string|regex:/^STD\d{8}$/|unique:students,student_nim,' . $id . ',student_id',
+                'student_specialization' => 'required|string|max:255',
+                'student_class' => 'required|string|max:255',
+                'student_major' => 'required|string|max:255',
+                'student_email' => 'required|email|unique:students,student_email,' . $id . ',student_id',
+                'student_phone' => 'required|string|regex:/^08[0-9]{9,11}$/',
+                'student_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+                'student_password' => 'nullable|string|min:8|confirmed',
             ], [
-                'teacher_nik.regex' => 'NIK must start with TCH followed by 8 digits',
-                'teacher_phone.regex' => 'Phone number must start with 08 and be between 11-13 digits',
+                'student_nim.regex' => 'NIM must start with STD followed by 8 digits',
+                'student_phone.regex' => 'Phone number must start with 08 and be between 11-13 digits',
             ]);
 
             // Upload foto baru jika ada
-            if ($request->hasFile('teacher_photo')) {
+            if ($request->hasFile('student_photo')) {
                 // Hapus foto lama jika ada
-                if ($teacher->teacher_photo) {
-                    Storage::disk('public')->delete($teacher->teacher_photo);
+                if ($student->student_photo) {
+                    Storage::disk('public')->delete($student->student_photo);
                 }
 
-                $photo = $request->file('teacher_photo');
+                $photo = $request->file('student_photo');
                 $photoName = time() . '_' . $photo->getClientOriginalName();
                 
                 // Pastikan direktori exists
-                $photoDir = 'public/images/teachers';
+                $photoDir = 'public/images/students';
                 if (!Storage::exists($photoDir)) {
                     Storage::makeDirectory($photoDir);
                 }
                 
                 // Simpan foto
-                $photoPath = $photo->storeAs('images/teachers', $photoName, 'public');
-                $validated['teacher_photo'] = $photoPath;
+                $photoPath = $photo->storeAs('images/students', $photoName, 'public');
+                $validated['student_photo'] = $photoPath;
             }
 
             // Update data
-            $teacher->update($validated);
+            $student->update($validated);
 
             DB::commit();
 
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Teacher data has been updated successfully.'
+                    'message' => 'Student data has been updated successfully.'
                 ]);
             }
 
-            return redirect()->route('teachers.index')->with('success', 'Teacher data has been updated successfully.');
+            return redirect()->route('students.index')->with('success', 'Student data has been updated successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
             if (isset($photoPath)) {
@@ -326,7 +330,7 @@ class TeacherController extends BaseController
                 Storage::disk('public')->delete($photoPath);
             }
 
-            \Log::error('Error updating teacher:', [
+            \Log::error('Error updating student:', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -334,13 +338,13 @@ class TeacherController extends BaseController
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error updating teacher: ' . $e->getMessage()
+                    'message' => 'Error updating student: ' . $e->getMessage()
                 ], 500);
             }
 
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Error updating teacher: ' . $e->getMessage());
+                ->with('error', 'Error updating student: ' . $e->getMessage());
         }
     }
 
@@ -352,33 +356,33 @@ class TeacherController extends BaseController
         try {
             DB::beginTransaction();
             
-            $teacher = Teacher::findOrFail($id);
+            $student = Student::findOrFail($id);
             
             // Delete photo if exists
-            if ($teacher->teacher_photo) {
-                Storage::disk('public')->delete($teacher->teacher_photo);
+            if ($student->student_photo) {
+                Storage::disk('public')->delete($student->student_photo);
             }
             
-            // Delete teacher
-            $teacher->delete();
+            // Delete student
+            $student->delete();
             
             DB::commit();
             
             if (request()->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Teacher has been deleted successfully.'
+                    'message' => 'Student has been deleted successfully.'
                 ]);
             }
             
-            return redirect()->route('teachers.index')
-                ->with('success', 'Teacher has been deleted successfully.');
+            return redirect()->route('students.index')
+                ->with('success', 'Student has been deleted successfully.');
             
         } catch (\Exception $e) {
             DB::rollBack();
             
-            \Log::error('Error deleting teacher:', [
-                'teacher_id' => $id,
+            \Log::error('Error deleting student:', [
+                'student_id' => $id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -386,12 +390,12 @@ class TeacherController extends BaseController
             if (request()->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error deleting teacher: ' . $e->getMessage()
+                    'message' => 'Error deleting student: ' . $e->getMessage()
                 ], 500);
             }
             
             return redirect()->back()
-                ->with('error', 'Error deleting teacher: ' . $e->getMessage());
+                ->with('error', 'Error deleting student: ' . $e->getMessage());
         }
     }
 
@@ -403,10 +407,10 @@ class TeacherController extends BaseController
                 'new_password' => 'required|min:8|confirmed',
             ]);
 
-            $teacher = Teacher::findOrFail($id);
+            $student = Student::findOrFail($id);
             
             // Get the raw password hash from database
-            $currentPasswordHash = $teacher->getRawOriginal('teacher_password');
+            $currentPasswordHash = $student->getRawOriginal('student_password');
 
             // Verify current password
             if (!Hash::check($request->current_password, $currentPasswordHash)) {
@@ -417,8 +421,8 @@ class TeacherController extends BaseController
             }
 
             // Update password - the mutator will handle hashing
-            $teacher->update([
-                'teacher_password' => $request->new_password
+            $student->update([
+                'student_password' => $request->new_password
             ]);
 
             return response()->json([
@@ -433,7 +437,7 @@ class TeacherController extends BaseController
             ], 422);
         } catch (\Exception $e) {
             \Log::error('Error changing password:', [
-                'teacher_id' => $id,
+                'student_id' => $id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
