@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Validation\Rule;
 
 class TeacherController extends BaseController
 {
@@ -24,6 +25,83 @@ class TeacherController extends BaseController
             // For non-AJAX requests, ensure we're returning a view
             return $next($request);
         });
+    }
+
+    /**
+     * Show the teacher registration form
+     */
+    public function showRegistrationForm()
+    {
+        // This method is kept for routing purposes, but we'll redirect to admin login
+        return redirect()->route('admin.login')
+            ->with('error', 'Only administrators can register new teachers.');
+    }
+
+    /**
+     * Handle a teacher registration request
+     */
+    public function register(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Validate input
+            $validated = $request->validate([
+                'teacher_name' => 'required|string|max:255',
+                'teacher_specialization' => 'required|string|max:255',
+                'teacher_position' => 'required|string|max:255',
+                'teacher_email' => [
+                    'required',
+                    'email',
+                    'unique:teachers,teacher_email',
+                    'unique:users,email'
+                ],
+                'teacher_phone' => 'required|string|regex:/^08[0-9]{9,11}$/',
+                'teacher_password' => 'required|string|min:8|confirmed',
+            ], [
+                'teacher_phone.regex' => 'Phone number must start with 08 and be between 11-13 digits',
+                'teacher_email.unique' => 'This email address is already in use.',
+            ]);
+
+            // Generate a unique NIK (Teacher ID)
+            $lastTeacher = Teacher::orderBy('teacher_id', 'desc')->first();
+            $lastId = $lastTeacher ? intval(substr($lastTeacher->teacher_nik, 3)) : 0;
+            $newId = $lastId + 1;
+            $validated['teacher_nik'] = 'TCH' . str_pad($newId, 8, '0', STR_PAD_LEFT);
+
+            // Create user first
+            $user = \App\Models\User::create([
+                'name' => $validated['teacher_name'],
+                'email' => $validated['teacher_email'],
+                'password' => Hash::make($validated['teacher_password']),
+                'role' => 'teacher',
+            ]);
+
+            // Add user_id to teacher data
+            $validated['user_id'] = $user->id;
+
+            // Create the teacher
+            Teacher::create($validated);
+
+            DB::commit();
+
+            return redirect()->route('login')->with('success', 'Registration successful! You can now login with your credentials.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error registering teacher:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Error during registration: ' . $e->getMessage());
+        }
     }
 
     public function index(Request $request)
@@ -98,13 +176,19 @@ class TeacherController extends BaseController
                 'teacher_nik' => 'required|string|unique:teachers,teacher_nik|regex:/^TCH\d{8}$/',
                 'teacher_specialization' => 'required|string|max:255',
                 'teacher_position' => 'required|string|max:255',
-                'teacher_email' => 'required|email|unique:teachers,teacher_email',
+                'teacher_email' => [
+                    'required',
+                    'email',
+                    'unique:teachers,teacher_email',
+                    'unique:users,email'
+                ],
                 'teacher_phone' => 'required|string|regex:/^08[0-9]{9,11}$/',
                 'teacher_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
                 'teacher_password' => 'required|string|min:8|confirmed',
             ], [
                 'teacher_nik.regex' => 'NIK must start with TCH followed by 8 digits',
                 'teacher_phone.regex' => 'Phone number must start with 08 and be between 11-13 digits',
+                'teacher_email.unique' => 'This email address is already in use.',
             ]);
 
             // Create user first
@@ -271,13 +355,19 @@ class TeacherController extends BaseController
                 'teacher_nik' => 'required|string|regex:/^TCH\d{8}$/|unique:teachers,teacher_nik,' . $id . ',teacher_id',
                 'teacher_specialization' => 'required|string|max:255',
                 'teacher_position' => 'required|string|max:255',
-                'teacher_email' => 'required|email|unique:teachers,teacher_email,' . $id . ',teacher_id',
+                'teacher_email' => [
+                    'required',
+                    'email',
+                    Rule::unique('teachers', 'teacher_email')->ignore($id, 'teacher_id'),
+                    Rule::unique('users', 'email')->ignore($teacher->user_id, 'id')
+                ],
                 'teacher_phone' => 'required|string|regex:/^08[0-9]{9,11}$/',
                 'teacher_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
                 'teacher_password' => 'nullable|string|min:8|confirmed',
             ], [
                 'teacher_nik.regex' => 'NIK must start with TCH followed by 8 digits',
                 'teacher_phone.regex' => 'Phone number must start with 08 and be between 11-13 digits',
+                'teacher_email.unique' => 'This email address is already in use.',
             ]);
 
             // Upload foto baru jika ada
@@ -303,6 +393,21 @@ class TeacherController extends BaseController
 
             // Update data
             $teacher->update($validated);
+
+            // Update the associated user record
+            if ($teacher->user) {
+                $teacher->user->update([
+                    'name' => $validated['teacher_name'],
+                    'email' => $validated['teacher_email'],
+                ]);
+                
+                // Update password if provided
+                if (isset($validated['teacher_password'])) {
+                    $teacher->user->update([
+                        'password' => Hash::make($validated['teacher_password']),
+                    ]);
+                }
+            }
 
             DB::commit();
 

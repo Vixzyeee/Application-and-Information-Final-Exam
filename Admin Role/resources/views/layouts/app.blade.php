@@ -55,6 +55,12 @@
                 </a>
             </li>
             <li>
+                <a href="{{ route('admin.teachers.form') }}" class="flex items-center p-2 text-[#EBEBEB] rounded-lg hover:bg-[#2B2C32] pl-6 transform hover:scale-110 transition-transform duration-300">
+                    <i class="bi bi-person-plus text-[24px]"></i>
+                    <span class="ml-3 font-normal hidden">Add Teacher</span>
+                </a>
+            </li>
+            <li>
                 <a href="{{ route('students.index') }}" class="flex items-center p-2 text-[#EBEBEB] rounded-lg hover:bg-[#2B2C32] pl-6 transform hover:scale-110 transition-transform duration-300">
                     <i class="bi bi-people text-[24px]"></i>
                     <span class="ml-3 font-normal hidden">Students</span>
@@ -64,16 +70,19 @@
         <!-- Bottom Menu -->
         <ul class="space-y-4 font-medium absolute bottom-8 left-4 right-4 transition-all duration-300">
             <li>
-                <a href="{{ route('profile') }}" class="flex items-center p-2 text-[#EBEBEB] rounded-lg hover:bg-[#2B2C32] pl-6 transform hover:scale-110 transition-transform duration-300">
+                <a href="{{ route('admin.profile') }}" class="flex items-center p-2 text-[#EBEBEB] rounded-lg hover:bg-[#2B2C32] pl-6 transform hover:scale-110 transition-transform duration-300">
                         <i class="bi bi-person-circle text-[24px]"></i>
                     <span class="ml-3 font-normal hidden">Profile</span>
                 </a>
             </li>
             <li>
-                <a href="#" class="flex items-center p-2 text-[#EBEBEB] rounded-lg hover:bg-[#2B2C32] pl-6 transform hover:scale-110 transition-transform duration-300">
+                <form action="{{ route('admin.logout') }}" method="POST" class="m-0 p-0">
+                    @csrf
+                    <button type="submit" class="flex items-center w-full p-2 text-[#EBEBEB] rounded-lg hover:bg-[#2B2C32] pl-6 transform hover:scale-110 transition-transform duration-300">
                         <i class="bi bi-box-arrow-left text-[24px]"></i>
-                    <span class="ml-3 font-normal hidden">Logout</span>
-                </a>
+                        <span class="ml-3 font-normal hidden">Logout</span>
+                    </button>
+                </form>
             </li>
         </ul>
     </div>
@@ -90,7 +99,11 @@
             </div>
 
             <!-- Bagian Tengah -->
-            <div class="flex-1 sm:block hidden"></div>
+            <div class="flex-1 sm:block hidden">
+                <div class="flex items-center space-x-4">
+                    <a href="{{ route('login') }}" class="text-[#EBEBEB] hover:bg-[#2B2C32] px-3 py-2 rounded-lg transform hover:scale-110 transition-transform duration-300">Login</a>
+                </div>
+            </div>
 
             <!-- Bagian Kanan -->
             <div class="flex items-center space-x-6 sm:block hidden">
