@@ -10,6 +10,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Validation\Rule;
+use App\Models\User;
 
 class TeacherController extends BaseController
 {
@@ -32,9 +33,7 @@ class TeacherController extends BaseController
      */
     public function showRegistrationForm()
     {
-        // This method is kept for routing purposes, but we'll redirect to admin login
-        return redirect()->route('admin.login')
-            ->with('error', 'Only administrators can register new teachers.');
+        return view('teachers.registration');
     }
 
     /**
@@ -48,8 +47,6 @@ class TeacherController extends BaseController
             // Validate input
             $validated = $request->validate([
                 'teacher_name' => 'required|string|max:255',
-                'teacher_specialization' => 'required|string|max:255',
-                'teacher_position' => 'required|string|max:255',
                 'teacher_email' => [
                     'required',
                     'email',
@@ -69,8 +66,12 @@ class TeacherController extends BaseController
             $newId = $lastId + 1;
             $validated['teacher_nik'] = 'TCH' . str_pad($newId, 8, '0', STR_PAD_LEFT);
 
+            // Set default values for specialization and position
+            $validated['teacher_specialization'] = 'General';
+            $validated['teacher_position'] = 'Teacher';
+
             // Create user first
-            $user = \App\Models\User::create([
+            $user = User::create([
                 'name' => $validated['teacher_name'],
                 'email' => $validated['teacher_email'],
                 'password' => Hash::make($validated['teacher_password']),

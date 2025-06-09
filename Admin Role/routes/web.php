@@ -22,6 +22,10 @@ Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Teacher Registration Route (standalone)
+Route::get('/teacher/registration', [TeacherController::class, 'showRegistrationForm'])->name('teacher.registration');
+Route::post('/teacher/registration', [TeacherController::class, 'register'])->name('teacher.registration.submit');
+
 // Admin routes
 Route::prefix('admin')->group(function () {
     // Guest routes (accessible when not logged in)
@@ -42,10 +46,6 @@ Route::prefix('admin')->group(function () {
         Route::put('/profile', [AdminController::class, 'updateProfile'])->name('admin.profile.update');
         Route::put('/password', [AdminController::class, 'updatePassword'])->name('admin.password.update');
         Route::delete('/profile', [AdminController::class, 'destroyProfile'])->name('admin.profile.destroy');
-        
-        // Teacher management routes
-        Route::get('/teachers/create', [AdminController::class, 'showCreateTeacherForm'])->name('admin.teachers.form');
-        Route::post('/teachers/create', [AdminController::class, 'createTeacher'])->name('admin.teachers.create');
     });
 });
 

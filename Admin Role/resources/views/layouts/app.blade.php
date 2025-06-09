@@ -55,12 +55,6 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('admin.teachers.form') }}" class="flex items-center p-2 text-[#EBEBEB] rounded-lg hover:bg-[#2B2C32] pl-6 transform hover:scale-110 transition-transform duration-300">
-                    <i class="bi bi-person-plus text-[24px]"></i>
-                    <span class="ml-3 font-normal hidden">Add Teacher</span>
-                </a>
-            </li>
-            <li>
                 <a href="{{ route('students.index') }}" class="flex items-center p-2 text-[#EBEBEB] rounded-lg hover:bg-[#2B2C32] pl-6 transform hover:scale-110 transition-transform duration-300">
                     <i class="bi bi-people text-[24px]"></i>
                     <span class="ml-3 font-normal hidden">Students</span>
@@ -102,6 +96,7 @@
             <div class="flex-1 sm:block hidden">
                 <div class="flex items-center space-x-4">
                     <a href="{{ route('login') }}" class="text-[#EBEBEB] hover:bg-[#2B2C32] px-3 py-2 rounded-lg transform hover:scale-110 transition-transform duration-300">Login</a>
+                    <a href="{{ route('teacher.registration') }}" class="text-[#EBEBEB] hover:bg-[#2B2C32] px-3 py-2 rounded-lg transform hover:scale-110 transition-transform duration-300">Teacher Registration</a>
                 </div>
             </div>
 
